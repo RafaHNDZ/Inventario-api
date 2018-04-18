@@ -1,4 +1,7 @@
 <?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+require_once('vendor/autoload.php');
+
 use Firebase\JWT\JWT;
 
 /**
@@ -8,22 +11,27 @@ use Firebase\JWT\JWT;
  * @author          Rafael Hernández
  * @version         1.0.0
  */
-class JWT{
-
+class Auth{
   /**
    * Super Secret Key
    * @var string
    */
-  private static $key = $this->config->item('jwt_key');
+  private static $key;
 
   /**
    * Algoritmo(s) de encriptación
    * @var array
    */
-  private static $encrypt = $this->config->item('jwt_algo');
+  private static $encrypt;
 
 
   private static $aud = null;
+
+  private function __construct(){
+    $this->ci = get_instance();
+    $key = $this->ci->config->item('jwt_key');
+    $encrypt = $this->ci->config->item('jwt_algo');
+  }
 
   /**
    * JWT encodeing function
@@ -31,7 +39,7 @@ class JWT{
    * @return string JWT String
    */
   public static function encode($payload){
-    return JWT::encode($payload, slef::$key);
+    return JWT::encode($payload, self::$key);
   }
 
   /**
