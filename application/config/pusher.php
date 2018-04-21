@@ -11,10 +11,10 @@
 | pusher_debug       bool    Encender/Apagar mensajes de debugeo, se encian a los logs de CI.
 |
 */
-$config['pusher_app_id']     = '';
-$config['pusher_app_key']    = '';
-$config['pusher_app_secret'] = '';
-$config['pusher_cluster']    = '';
+$config['pusher_app_id']     = '507090';
+$config['pusher_app_key']    = '11317f04cabab4346f97';
+$config['pusher_app_secret'] = '4f28223c4d7b99f29818';
+$config['pusher_cluster']    = 'us2';
 $config['pusher_debug']      = FALSE;
 
 /*

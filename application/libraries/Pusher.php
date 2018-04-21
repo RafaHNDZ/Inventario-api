@@ -1,5 +1,5 @@
 <?php defined('BASEPATH') OR exit('No direct script access allowed');
-
+require('vendor/autoload.php');
 /**
  * Pusher for CodeIgniter
  *
@@ -18,7 +18,7 @@
  * @version     2.0.0
  */
 
-Class Ci_pusher
+Class Pusher
 {
 
     public function __construct()
@@ -30,14 +30,13 @@ Class Ci_pusher
         $app_id      = $this->config->item('pusher_app_id');
         $app_key     = $this->config->item('pusher_app_key');
         $app_secret  = $this->config->item('pusher_app_secret');
-        $app_cluster = $this->config->item('pusher_cluster');
         $options     = $this->options();
 
         // Create Pusher object only if we don't already have one
         if (!isset($this->pusher))
         {
             // Create new Pusher object
-            $this->pusher = new Pusher\Pusher($app_key, $app_secret, $app_id, $app_cluster, $options);
+            $this->pusher = new Pusher\Pusher($app_key, $app_secret, $app_id, $options);
             log_message('debug', 'CI Pusher library loaded');
 
             // Set logger if debug is set to true
@@ -75,6 +74,7 @@ Class Ci_pusher
         $options['pusher_port']      = ($this->config->item('pusher_port')) ?: NULL;
         $options['pusher_timeout']   = ($this->config->item('pusher_timeout')) ?: NULL;
         $options['pusher_encrypted'] = ($this->config->item('pusher_encrypted')) ?: NULL;
+        $options['cluster']          =  $this->config->item('pusher_cluster');
 
         $options = array_filter($options);
 
