@@ -16,21 +16,19 @@ class Auth{
    * Super Secret Key
    * @var string
    */
-  private static $key;
+  private static $key = 'S0p3r_S3c3t_k3y';
 
   /**
    * Algoritmo(s) de encriptación
    * @var array
    */
-  private static $encrypt;
+  private static $encrypt = array('HS256');
 
 
   private static $aud = null;
 
-  private function __construct(){
-    $this->ci = get_instance();
-    $key = $this->ci->config->item('jwt_key');
-    $encrypt = $this->ci->config->item('jwt_algo');
+  public function __construct(){
+
   }
 
   /**
@@ -47,15 +45,13 @@ class Auth{
    * @param  String $data to JWT String
    * @return Array Decoded object
    */
-  public static function decode($data){
-    $time = time();
-    $token = array(
-      'iat' => $time,
-      'exp' => $time + (60 * 60),
-      'data' => $data,
-      'aud' => self::aud()
-    );
-    return JWT::decode($token, self::$key, self::$encrypt);
+  public static function decode($token){
+    try {
+      return JWT::decode($token, self::$key, self::$encrypt);
+    } catch (Exception $e) {
+      return null;
+    }
+
   }
 
   /**
@@ -65,10 +61,11 @@ class Auth{
    */
   public static function check($token){
     if(empty($token)){
-      throw new Exception('Invalid token supplied.');
+      //throw new Exception('Invalid token supplied.');
+      return false;
     }else{
       $decode =  JWT::decode($token, self::$key, self::$encrypt);
-      if($decode->aud !== self::$aud){
+      if($decode->aud !== self::aud()){
         //throw new Exception('Invalid user token.');
         return false;
       }else{
@@ -77,7 +74,7 @@ class Auth{
     }
   }
 
-  private static function aud(){
+  public static function aud(){
     $aud = '';
 
     if (!empty($_SERVER['HTTP_CLIENT_IP'])) {

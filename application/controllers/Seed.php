@@ -13,6 +13,7 @@ class Seed extends REST_Controller{
     $this->load->model('Categoria_model', 'Categoria');
     $this->load->model('Entrada_model', 'Entrada');
     $this->load->model('Usuario_model', 'Usuario');
+    $this->load->model('Medida_model', 'Medida');
   }
 
   public function categoria_get($max = 20){
@@ -144,20 +145,21 @@ class Seed extends REST_Controller{
     $this->response($response);
   }
 
-  public function entrada_get($max = 5){
+  public function entrada_get($max = 30){
     $entradas = array();
     for ($i = 0; $i < $max; $i++){
       $entrada = array(
         'sucursal' => $this->faker->numberBetween(1, $this->db->count_all('sucursal')),
         'usuario' => $this->faker->numberBetween(1, $this->db->count_all('usuario')),
-        'fecha' => $this->faker->date('Y-m-d', 'now') .' '. $this->faker->time('H:i:s', 'now'),
+        //'fecha' => $this->faker->date('Y-m-d', 'now') .' '. $this->faker->time('H:i:s', 'now'),
+        'proveedor' => $this->faker->numberBetween(1, $this->db->count_all('proveedor')),
         'estatus' => $this->faker->numberBetween(1, 2)
       );
       $detalles = array();
-      $proveedor_id = $this->faker->numberBetween(1, $this->db->count_all('proveedor'));
-      for ($i=0; $i < $this->faker->numberBetween(1, 10); $i++) {
+      //$proveedor_id = $this->faker->numberBetween(1, $this->db->count_all('proveedor'));
+      for ($i=0; $i < $this->faker->numberBetween(1, 6); $i++) {
         $detalle = array(
-          'proveedor' => $proveedor_id,
+          //'proveedor' => $proveedor_id,
           'producto' => $this->faker->numberBetween(1, $this->db->count_all('producto')),
           'codigo' => $this->faker->ean8(),
           'stock_ingreso' => $this->faker->numberBetween(1, 14),
@@ -171,6 +173,7 @@ class Seed extends REST_Controller{
       $entrada['detalle'] = $detalles;
       array_push($entradas, $entrada);
     }
+    $this->Entrada->truncate();
     if($this->Entrada->insert_entrada($entradas)){
       $response = array(
         'status' => 200,
@@ -200,12 +203,48 @@ class Seed extends REST_Controller{
       );
       array_push($usuarios, $usuario);
     }
+    $usuario = array(
+      'nombre' => 'Rafael',
+      'apellidos' => 'Hernández Ramírez',
+      'email' => 'rafa_hndz@outlook.com',
+      'pssword' => password_hash('secret', PASSWORD_BCRYPT, array('cost' => 12)),
+      'telefono' => '4661091127',
+      'direccion' => 'Leon Rójas #18',
+      'sucursal' => $this->faker->numberBetween(1, $this->db->count_all('sucursal'))
+    );
+    array_push($usuarios, $usuario);
     $this->Usuario->truncate();
     if($this->Usuario->insert_usuarios($usuarios)){
       $response = array(
         'status' => 200,
         'error' => null,
         'usuarios' => $usuarios
+      );
+    }else{
+      $response = array(
+        'status' => 500,
+        'error' => $this->db->error()
+      );
+    }
+    $this->response($response);
+  }
+
+  public function medida_get($max = 10){
+    $unidades = array();
+    for ($i=0; $i < $max; $i++) {
+      $code = $this->faker->countryCode();
+      $unidad = array(
+        'nombre' => $code,
+        'simbolo' => strtolower($code),
+        'status' => 1
+      );
+      array_push($unidades, $unidad);
+    }
+    if($this->Medida->save_medidas($unidades)){
+      $response = array(
+        'status' => 200,
+        'error' => null,
+        'medidas' => $unidades
       );
     }else{
       $response = array(

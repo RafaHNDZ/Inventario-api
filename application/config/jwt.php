@@ -3,7 +3,7 @@
  * Clace de encriptación para JWT
  * @var String
  */
-$config['jwt_key'] = '';
+$config['jwt_key'] = 'S0p3r_S3c3t_k3y';
 
 /**
  * Algoritmos de encriptación
