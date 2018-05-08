@@ -145,7 +145,7 @@ class Seed extends REST_Controller{
     $this->response($response);
   }
 
-  public function entrada_get($max = 30){
+  public function entrada_get($max = 6){
     $entradas = array();
     for ($i = 0; $i < $max; $i++){
       $entrada = array(
@@ -214,7 +214,7 @@ class Seed extends REST_Controller{
     );
     array_push($usuarios, $usuario);
     $this->Usuario->truncate();
-    if($this->Usuario->insert_usuarios($usuarios)){
+    if($this->Usuario->save_many($usuarios)){
       $response = array(
         'status' => 200,
         'error' => null,

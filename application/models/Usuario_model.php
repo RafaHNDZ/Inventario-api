@@ -35,7 +35,11 @@ class Usuario_model extends CI_Model{
     }
   }
 
-  public function insert_usuarios($users){
+  public function save($usuario){
+    return $this->db->insert('usuario', $usuario);
+  }
+
+  public function save_many($users){
     $this->db->trans_begin();
 
     $this->db->insert_batch('usuario', $users);
@@ -46,6 +50,21 @@ class Usuario_model extends CI_Model{
     }else{
       $this->db->trans_complete();
       return true;
+    }
+  }
+
+/**
+ * Obtiene la información de un usuario
+ * @param  Int $id Id del usuario
+ * @return Array
+ */
+  public function details($id){
+    $this->db->where('id_user', $id);
+    $query = $this->db->get('usuario');
+    if($query->num_rows() > 0){
+      return $query->row();
+    }else{
+      return null;
     }
   }
 

@@ -5,6 +5,10 @@ class Entrada_model extends CI_Model{
 
   public function __construct(){
     parent::__construct();
+    $this->load->model('Proveedor_model', 'Proveedor');
+    $this->load->model('Usuario_model', 'Usuario');
+    $this->load->model('Sucursal_model', 'Sucursal');
+    $this->load->model('Producto_model', 'Producto');
   }
 /**
  * Registra un arreglo de entradas al sistema.
@@ -38,44 +42,48 @@ class Entrada_model extends CI_Model{
       return true;
     }
   }
-
-  public function getAll($per_page, $offset){
+  /**
+   * Regresa una serie de registros de la tabla entrada
+   * @param  Int $per_page Número de registros solicitados
+   * @param  Int $offset   Posición desde la cual iniciar
+   * @return Array         Arreglo de datos
+   */
+  public function getAll($page, $per_page){
+    //Paginar
+    $offset = $per_page * ($page - 1);
+    //Traer los registros base(entradas)
     $this->db->limit($per_page, $offset);
     $query = $this->db->get('entrada');
     if($query->num_rows() > 0){
       $entradas = $query->result();
       for ($i=0; $i < sizeof($entradas); $i++) {
+        //Traer el proveedor de la entrada
+        $entradas[$i]->proveedor = $this->Proveedor->detalils($entradas[$i]->proveedor);
+        //Traer el usuario(empleado) que registro la entrada
+        $entradas[$i]->usuario = $this->Usuario->details($entradas[$i]->usuario);
+        //Traer la sucursal que registro la entrada
+        $entradas[$i]->sucursal = $this->Sucursal->details($entradas[$i]->sucursal);
+        //Traer el detalle(lista de productos) de la entrada
         $this->db->reset_query();
         $this->db->where('entrada', $entradas[$i]->identrada);
         $query = $this->db->get('detalle_entrada');
         if($query->num_rows() > 0){
           $detalle = $query->result();
           for ($x=0; $x <sizeof($detalle); $x++) {
-            $this->db->where('idproducto', $detalle[$x]->producto);
-            $query = $this->db->get('producto');
-            if($query->num_rows() > 0){
-              $detalle[$x]->producto = $query->row();
-            }else{
-              $producto = null;
-            }
-            $this->db->reset_query();
-            $this->db->where('idproveedor', $detalle[$x]->proveedor);
-            $query = $this->db->get('proveedor');
-            if($query->num_rows() > 0){
-              $detalle[$x]->proveedor = $query->row();
-            }else{
-              $detalle[$x]->proveedor = null;
-            }
+            $detalle[$x]->producto = $this->Producto->details($detalle[$x]->producto);
           }
         }else{
-          $detalle = null;
+          $entradas[$i]->detalle = null;
         }
-        $entradas[$i]->detalle = $detalle;
       }
       return $entradas;
     }else{
       return null;
     }
+  }
+
+  public function total(){
+    return $this->db->count_all('entrada');
   }
 
   function truncate(){

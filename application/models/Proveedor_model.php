@@ -8,11 +8,30 @@ class Proveedor_model extends CI_Model{
     $this->proveedor_table = 'proveedor';
   }
 
+/**
+ * Registra una serie de proveedores
+ * @param  Array $proveedores Arreglo de proveedores
+ * @return Boolean           
+ */
   public function insert_proveedores($proveedores){
     if($this->db->insert_batch($this->proveedor_table, $proveedores)){
       return true;
     }else{
       return false;
+    }
+  }
+  /**
+   * Regresa información sobre un proveedor
+   * @param  Int $id Id del proveedor
+   * @return Array
+   */
+  public function detalils($id){
+    $this->db->where('idproveedor', $id);
+    $query = $this->db->get('proveedor');
+    if($query->num_rows() > 0){
+      return $query->row();
+    }else{
+      return null;
     }
   }
 

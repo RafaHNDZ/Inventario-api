@@ -9,14 +9,14 @@ class Entrada extends REST_Controller{
     $this->load->model('Entrada_model', 'Entrada');
     $this->load->model('Permiso_model', 'Permiso');
   }
-  public function index_get(){
+  public function index_get($page = 1, $per_page = 10){
     //Obtener Headers
     $headers = $this->input->request_headers();
     $authorization = $headers['Authorization'];
     //Comprobar si se tiene Token
     if(!$authorization){
       $response = array(
-        'status' => 403,
+        'code' => 401,
         'message' => 'Se requiere Token'
       );
     }else{
@@ -24,7 +24,7 @@ class Entrada extends REST_Controller{
       $this->load->library('Auth');
       if(!$this->auth->check($authorization)){
         $response = array(
-          'status' => 403,
+          'code' => 401,
           'message' => 'Token no valido'
         );
       }else{
@@ -32,28 +32,29 @@ class Entrada extends REST_Controller{
         $usuario = $this->auth->decode($authorization);
         if(!$usuario){
           $response = array(
-            'status' => 500,
+            'code' => 500,
             'message' => 'No se puede acceder al Token'
           );
         }else{
           //Procesar solicitud
           //Verificar los permisos del usuario
           $permisos = $this->Permiso->get_permisos($usuario->data->id_user);
-          if(!$permisos->manage_entradas){
+          if(!isset($permisos) OR !$permisos->manage_entradas){
             $response = array(
-              'status' => 401,
+              'code' => 401,
               'message' => 'Acceso denegado'
             );
           }else{
-            $entradas = $this->Entrada->getAll(10, 0);
+            $entradas = $this->Entrada->getAll($page , $per_page);
             if(!$entradas){
               $response = array(
-                'status' => 401,
+                'code' => 204,
                 'message' => 'No se encontraron registros'
               );
             }else{
               $response = array(
-                'status' => 200,
+                'code' => 200,
+                'total' => $this->Entrada->total(),
                 'entradas' => $entradas
               );
             }
