@@ -190,4 +190,76 @@ class Usuario extends REST_Controller{
     }
     $this->response($response);
   }
+
+  public function update_put($user_id){
+    //Obtener Headers
+    $headers = $this->input->request_headers();
+    $authorization = $headers['Authorization'];
+    if (!isset($authorization)) {
+      $response = array(
+        'code' => 400,
+        'mesage' => 'Se requiere autorización'
+      );
+    }else{
+      //Validar token
+      $this->load->library('Auth');
+      if(!$this->auth->check($authorization)){
+        $response = array(
+          'code' => 401,
+          'message' => 'Token no valido'
+        );
+      }else{
+        //Validar permisos
+        $usuario = $this->auth->decode($authorization);
+        $permisos = $this->Permiso->get_permisos($usuario->data->id_user);
+        if(!isset($permisos) OR $permisos->manage_usuarios != TRUE){
+          $response = array(
+            'code' => 401,
+            'message' => 'Acceso denegado'
+          );
+        }else{
+          //Puede administrar usuarios, coprobar que el usuario a editar sea
+          //de la misma sucursal o que tenga privilegios de administrador
+          $request_user = $this->auth->decode($authorization);
+          $request_permisos = $this->Permiso->get_permisos($request_user->data->id_user);
+          $user_to_edit = $this->Usuario->details($user_id);
+
+          if($user_to_edit->sucursal != $request_user->data->sucursal && $request_permisos->is_admin == FALSE){
+            //No es administrador, no puede manejar sucursales libremente
+            $response = array(
+              'code' => 403,
+              'message' => 'No tienes permisos sobre esa sucursal'
+            );
+          }else{
+            //Es administrador
+            $data = array(
+              'nombre' => $this->put('nombre'),
+              'apellidos' => $this->put('apellidos'),
+              'email' => $this->put('email'),
+              'pssword' => password_hash($this->put('password'), PASSWORD_BCRYPT, array('cost' => 12)),
+              'direccion' => $this->put('direccion'),
+              'foto' => $file_data['file_name'],
+              'sucursal' => $this->put('sucursal')
+            );
+            if($this->Usuario->update($user_id, $data)){
+              $response = array(
+                'code' => 200,
+                //'requester' => $request_user,
+                //'permisos' => $request_permisos,
+                //'usert_to_edit' => $user_to_edit,
+                'data' => $data
+              );
+            }else{
+              $response = array(
+                'code' => 500,
+                'message' => 'No se pudo actualizar el registro',
+                'error' => $this->db->error()
+              );
+            }
+          }
+        }
+      }
+    }
+    $this->response($response);
+  }
 }

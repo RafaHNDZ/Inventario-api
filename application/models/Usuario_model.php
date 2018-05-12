@@ -53,6 +53,11 @@ class Usuario_model extends CI_Model{
     }
   }
 
+  public function update($id, $data){
+    $this->db->where('id_user', $id);
+    return $this->db->update('usuario', $data);
+  }
+
 /**
  * Obtiene la información de un usuario
  * @param  Int $id Id del usuario

@@ -55,6 +55,7 @@ $route['translate_uri_dashes'] = FALSE;
 
 $route['api/Login']['post'] = 'api/Usuario/login';
 $route['api/usuario']['post'] = 'api/Usuario/create';
+$route['api/usuario/(:num)']['put'] = 'api/Usuario/update/$1';
 
 $route['api/entradas/(:num)/(:num)']['get'] = 'api/Entrada/$1/$2';
 $route['api/entradas']['get'] = 'api/Entrada';
