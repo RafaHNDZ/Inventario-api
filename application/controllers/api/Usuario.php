@@ -10,8 +10,65 @@ class Usuario extends REST_Controller{
     $this->load->model('Permiso_model', 'Permiso');
   }
 
-  public function index_get(){
+ /**
+  * Obtiene todos los usuarios
+  */
+  public function all_get(){
+    //Obtener Headers
+    $headers = $this->input->request_headers();
+    $authorization = $headers['Authorization'];
+    if (!isset($authorization)) {
+      $response = array(
+        'code' => 400,
+        'mesage' => 'Se requiere autorización'
+      );
+    }else{
+      //Validar token
+      $this->load->library('Auth');
+      if(!$this->auth->check($authorization)){
+        $response = array(
+          'code' => 401,
+          'message' => 'Token no valido'
+        );
+      }else{
+        //Validar permisos
+        $usuario = $this->auth->decode($authorization);
+        $permisos = $this->Permiso->get_permisos($usuario->data->id_user);
+        if(!isset($permisos) OR $permisos->manage_usuarios != TRUE){
+          $response = array(
+            'code' => 401,
+            'message' => 'Acceso denegado'
+          );
+        }else{
+          //Comprobar que puede adminitrar usuarios
+          $request_user = $this->auth->decode($authorization);
+          $request_permisos = $this->Permiso->get_permisos($request_user->data->id_user);
 
+          if($request_permisos->is_admin == FALSE OR $request_permisos->manage_usuarios != 1){
+            //No es administrador, no puede manejar sucursales libremente
+            $response = array(
+              'code' => 403,
+              'message' => 'No tienes permisos sobre esa sucursal'
+            );
+          }else{
+            //Es administrador
+            $usuarios = $this->Usuario->get_all();
+            if($usuarios){
+              $response = array(
+                'code' => 200,
+                'usuarios' => $usuarios
+              );
+            }else{
+              $response = array(
+                'code' => 201,
+                'message' => 'Sin registros'
+              );
+            }
+          }
+        }
+      }
+    }
+    $this->response($response);
   }
 
   public function login_post(){
@@ -37,21 +94,33 @@ class Usuario extends REST_Controller{
             'message' => 'Contraseña incorrecta'
           );
         }else{
-          $this->load->library('Auth');
-          $time = time();
-          $jwt = array(
-            'iat' => $time,
-            'eat' => $time + (60 * 60) * 12,
-            'aud' => $this->auth->aud(),
-            'data' => $usuario
-          );
-          $token = $this->auth->encode($jwt);
-          $response = array(
-            'status' => 200,
-            'error' => null,
-            'token' => $token,
-            'jwt' => $jwt
-          );
+          if($usuario->status == 2){
+            $response = array(
+              'code' => 403,
+              'message' => 'Cuenta bloqueada'
+            );
+          }else if($usuario->status == 0){
+            $response = array(
+              'code' => 403,
+              'message' => 'Cuenta desactivada'
+            );
+          }else{
+            $this->load->library('Auth');
+            $time = time();
+            $jwt = array(
+              'iat' => $time,
+              'eat' => $time + (60 * 60) * 12,
+              'aud' => $this->auth->aud(),
+              'data' => $usuario
+            );
+            $token = $this->auth->encode($jwt);
+            $response = array(
+              'status' => 200,
+              'error' => null,
+              'token' => $token,
+              'jwt' => $jwt
+            );
+          }
         }
       }
     }
@@ -191,6 +260,11 @@ class Usuario extends REST_Controller{
     $this->response($response);
   }
 
+/**
+ * Acctualiza la informacion de un usuario
+ * @param  Int $user_id Id del usuario a modificar
+ * @return                  Http response
+ */
   public function update_put($user_id){
     //Obtener Headers
     $headers = $this->input->request_headers();
@@ -253,6 +327,66 @@ class Usuario extends REST_Controller{
               $response = array(
                 'code' => 500,
                 'message' => 'No se pudo actualizar el registro',
+                'error' => $this->db->error()
+              );
+            }
+          }
+        }
+      }
+    }
+    $this->response($response);
+  }
+
+  public function remove_delete($user_id){
+    //Obtener Headers
+    $headers = $this->input->request_headers();
+    $authorization = $headers['Authorization'];
+    if (!isset($authorization)) {
+      $response = array(
+        'code' => 400,
+        'mesage' => 'Se requiere autorización'
+      );
+    }else{
+      //Validar token
+      $this->load->library('Auth');
+      if(!$this->auth->check($authorization)){
+        $response = array(
+          'code' => 401,
+          'message' => 'Token no valido'
+        );
+      }else{
+        //Validar permisos
+        $usuario = $this->auth->decode($authorization);
+        $permisos = $this->Permiso->get_permisos($usuario->data->id_user);
+        if(!isset($permisos) OR $permisos->manage_usuarios != TRUE){
+          $response = array(
+            'code' => 401,
+            'message' => 'Acceso denegado'
+          );
+        }else{
+          //Puede administrar usuarios, coprobar que el usuario a editar sea
+          //de la misma sucursal o que tenga privilegios de administrador
+          $request_user = $this->auth->decode($authorization);
+          $request_permisos = $this->Permiso->get_permisos($request_user->data->id_user);
+          $user_to_edit = $this->Usuario->details($user_id);
+
+          if($user_to_edit->sucursal != $request_user->data->sucursal && $request_permisos->is_admin == FALSE){
+            //No es administrador, no puede manejar sucursales libremente
+            $response = array(
+              'code' => 403,
+              'message' => 'No tienes permisos sobre esa sucursal'
+            );
+          }else{
+            //Es administrador
+            if($this->Usuario->delete($user_id)){
+              $response = array(
+                'code' => 200,
+                'message' => 'Se ha dado de baja al usuario'
+              );
+            }else{
+              $response = array(
+                'code' => 500,
+                'message' => 'Error en la base de datos',
                 'error' => $this->db->error()
               );
             }

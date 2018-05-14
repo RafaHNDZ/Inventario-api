@@ -8,14 +8,17 @@ class Usuario_model extends CI_Model{
   }
 
   public function login($email, $password){
-    $this->db->select('id_user, email, pssword, nombre, apellidos, sucursal, foto, created_at');
+    $this->db->select('id_user, email, pssword, nombre, apellidos, foto, created_at, status');
     $this->db->where('email', $email);
     $this->db->limit('1');
     $query = $this->db->get('usuario');
     if($query->num_rows() > 0){
+      //Usuario encontrado
       $usuario  = $query->row();
       if(password_verify($password, $usuario->pssword)){
+        //Credenciales validas
         unset($usuario->pssword);
+        //unset($usuario->status);
         $this->db->reset_query();
         $this->db->select('manage_usuarios, manage_almacen, manage_ventas, manage_entradas, read_entradas, read_compras');
         $this->db->where('usuario', $usuario->id_user);
@@ -30,6 +33,58 @@ class Usuario_model extends CI_Model{
       }else{
         return false;
       }
+    }else{
+      return null;
+    }
+  }
+
+  public function get_all(){
+    $this->db->select('*');
+    $this->db->from('usuario');
+    $query = $this->db->get();
+    if($query->num_rows() > 0){
+      $usuarios = $query->result();
+      $this->db->reset_query();
+      for ($i=0; $i < sizeof($usuarios); $i++) {
+        unset($usuarios[$i]->pssword);
+        $this->db->select('*');
+        $this->db->from('sucursal');
+        $this->db->where('idsucursal', $usuarios[$i]->sucursal);
+        $query = $this->db->get();
+        if($query->num_rows() > 0){
+          $usuarios[$i]->sucursal = $query->row();
+        }else{
+          $usuarios[$i]->sucursal = null;
+        }
+      }
+      return $usuarios;
+    }else{
+      return null;
+    }
+  }
+
+  public function paginate($page, $per_page){
+    $offset = $per_page * ($page - 1);
+    $this->db->select('*');
+    $this->db->from('usuario');
+    $this->db->limit($per_page, $offset);
+    $query = $this->db->get();
+    if($query->num_rows() > 0){
+      $usuarios = $query->result();
+      $this->db->reset_query();
+      for ($i=0; $i < sizeof($usuarios); $i++) {
+        unset($usuarios[$i]->pssword);
+        $this->db->select('*');
+        $this->db->from('sucursal');
+        $this->db->where('idsucursal', $usuarios[$i]->sucursal);
+        $query = $this->db->get();
+        if($query->num_rows() > 0){
+          $usuarios[$i]->sucursal = $query->row();
+        }else{
+          $usuarios[$i]->sucursal = null;
+        }
+      }
+      return $usuarios;
     }else{
       return null;
     }
@@ -56,6 +111,12 @@ class Usuario_model extends CI_Model{
   public function update($id, $data){
     $this->db->where('id_user', $id);
     return $this->db->update('usuario', $data);
+  }
+
+  public function delete($id){
+    $this->db->set('status', 2);
+    $this->db->where('id_user', $id);
+    return $this->db->update('usuario');
   }
 
 /**

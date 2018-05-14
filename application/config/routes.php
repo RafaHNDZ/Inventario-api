@@ -53,9 +53,13 @@ $route['default_controller'] = 'welcome';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
-$route['api/Login']['post'] = 'api/Usuario/login';
+$route['api/login']['post'] = 'api/Usuario/login';
+
+$route['api/usuario']['get'] = 'api/Usuario/all';
+$route['api/usuario/(:num)/(:num)']['get'] = 'api/Usuario/pagination';
 $route['api/usuario']['post'] = 'api/Usuario/create';
 $route['api/usuario/(:num)']['put'] = 'api/Usuario/update/$1';
+$route['api/usuario/(:num)']['delete'] = 'api/Usuario/remove/$1';
 
 $route['api/entradas/(:num)/(:num)']['get'] = 'api/Entrada/$1/$2';
 $route['api/entradas']['get'] = 'api/Entrada';

@@ -196,10 +196,11 @@ class Seed extends REST_Controller{
         'nombre' => $this->faker->firstName(),
         'apellidos' => $this->faker->lastName(),
         'email' => $this->faker->email(),
-        'pssword' => md5('secret'),
+        'pssword' => password_hash('secret', PASSWORD_BCRYPT, array('cost' => 12)),
         'telefono' => $this->faker->phoneNumber(),
         'direccion' => $this->faker->address(),
-        'sucursal' => $this->faker->numberBetween(1, $this->db->count_all('sucursal'))
+        //'sucursal' => $this->faker->numberBetween(1, $this->db->count_all('sucursal')),
+        'status' => $this->faker->numberBetween(0, 2)
       );
       array_push($usuarios, $usuario);
     }
@@ -210,7 +211,8 @@ class Seed extends REST_Controller{
       'pssword' => password_hash('secret', PASSWORD_BCRYPT, array('cost' => 12)),
       'telefono' => '4661091127',
       'direccion' => 'Leon Rójas #18',
-      'sucursal' => $this->faker->numberBetween(1, $this->db->count_all('sucursal'))
+      //'sucursal' => $this->faker->numberBetween(1, $this->db->count_all('sucursal')),
+      'status' => 1
     );
     array_push($usuarios, $usuario);
     $this->Usuario->truncate();
