@@ -48,13 +48,16 @@ class Entrada_model extends CI_Model{
    * @param  Int $offset   Posición desde la cual iniciar
    * @return Array         Arreglo de datos
    */
-  public function paginate($page, $per_page){
+  public function paginate($sucursal, $page, $per_page){
     //Paginar
     $offset = $per_page * ($page - 1);
     //Traer los registros base(entradas)
+    $this->db->select('*');
+    $this->db->from('entrada');
+    $this->db->where('sucursal', $sucursal);
     $this->db->limit($per_page, $offset);
     $this->db->order_by('identrada', 'DESC');
-    $query = $this->db->get('entrada');
+    $query = $this->db->get();
     if($query->num_rows() > 0){
       $entradas = $query->result();
       for ($i=0; $i < sizeof($entradas); $i++) {

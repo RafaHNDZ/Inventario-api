@@ -8,13 +8,25 @@ class Permiso_model extends CI_Model{
   }
 
   public function get_permisos($user){
-    $this->db->select('manage_usuarios, manage_almacen, manage_ventas, manage_entradas, read_entradas, read_compras, is_admin');
+    $this->db->select('manage_usuarios, manage_almacen, manage_ventas, manage_entradas, manage_proveedores, read_entradas, read_compras, is_admin');
     $this->db->where('usuario', $user);
     $query = $this->db->get('permisos');
     if($query->num_rows() > 0){
       return $query->row();
     }else{
       return false;
+    }
+  }
+
+  public function getSucursales($user){
+    $this->db->select('*');
+    $this->db->from('permisos');
+    $this->db->where('usuario', $user);
+    $query = $this->db->get();
+    if($query->num_rows() > 0){
+      return $query->result();
+    }else{
+      return null;
     }
   }
 

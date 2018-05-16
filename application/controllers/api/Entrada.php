@@ -9,7 +9,7 @@ class Entrada extends REST_Controller{
     $this->load->model('Entrada_model', 'Entrada');
     $this->load->model('Permiso_model', 'Permiso');
   }
-  public function index_get($page = 1, $per_page = 10){
+  public function index_get(){
     //Obtener Headers
     $headers = $this->input->request_headers();
     $authorization = $headers['Authorization'];
@@ -45,7 +45,10 @@ class Entrada extends REST_Controller{
               'message' => 'Acceso denegado'
             );
           }else{
-            $entradas = $this->Entrada->paginate($page , $per_page);
+            $sucursal = $this->get('sucursal');
+            $page = $this->get('page');
+            $per_page = $this->get('per_page');
+            $entradas = $this->Entrada->paginate($sucursal, $page , $per_page);
             if(!$entradas){
               $response = array(
                 'code' => 204,

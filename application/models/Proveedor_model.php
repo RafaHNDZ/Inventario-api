@@ -11,7 +11,7 @@ class Proveedor_model extends CI_Model{
 /**
  * Registra una serie de proveedores
  * @param  Array $proveedores Arreglo de proveedores
- * @return Boolean           
+ * @return Boolean
  */
   public function insert_proveedores($proveedores){
     if($this->db->insert_batch($this->proveedor_table, $proveedores)){
@@ -32,6 +32,20 @@ class Proveedor_model extends CI_Model{
       return $query->row();
     }else{
       return null;
+    }
+  }
+
+  public function paginate($page, $per_page){
+    $offset = $per_page * ($page - 1);
+    $this->db->select('*');
+    $this->db->from('proveedor');
+    $this->db->limit($per_page, $offset);
+    $this->db->order_by('idproveedor', 'DESC');
+    $query = $this->db->get();
+    if($query->num_rows() > 0){
+      return $query->result();
+    }else{
+      return false;
     }
   }
 
