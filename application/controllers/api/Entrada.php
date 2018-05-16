@@ -123,4 +123,64 @@ class Entrada extends REST_Controller{
     }
     $this->response($response);
   }
+
+  public function update_put($id){
+    //Obtener Headers
+    $headers = $this->input->request_headers();
+    $authorization = $headers['Authorization'];
+    //Comprobar si se tiene Token
+    if(!$authorization){
+      $response = array(
+        'code' => 400,
+        'message' => 'Acceso denegado',
+        'error' => 'Se requiere Token'
+      );
+    }else{
+      //Verificar Token
+      $this->load->library('Auth');
+      if(!$this->auth->check($authorization)){
+        $response = array(
+          'code' => 401,
+          'message' => 'Acceso denegado',
+          'details' => 'Token no valido'
+        );
+      }else{
+        //Decodificar Token
+        $usuario = $this->auth->decode($authorization);
+        if(!$usuario){
+          $response = array(
+            'code' => 500,
+            'message' => 'No se puede acceder al Token'
+          );
+        }else{
+          //Procesar solicitud
+          //Verificar los permisos del usuario
+          $permisos = $this->Permiso->get_permisos($usuario->data->id_user);
+          if(!isset($permisos) OR !$permisos->manage_entradas){
+            $response = array(
+              'code' => 401,
+              'message' => 'Acceso denegado',
+              'details' => 'No tienes los permisos necesarios'
+            );
+          }else{
+            //Tiene permisos
+            $data = $this->put();
+            if($this->Entrada->update($id, $data)){
+              $response = array(
+                'code' => 200,
+                'message' => 'Entrada actualizada'
+              );
+            }else{
+              $response = array(
+                'code' => 500,
+                'message'=> 'Error en la base de datos',
+                'error' => $this->db->error()
+              );
+            }
+          }
+        }
+      }
+    }
+    $this->response($response);
+  }
 }

@@ -127,6 +127,11 @@ class Entrada_model extends CI_Model{
     }
   }
 
+  public function update($id, $data){
+    $this->db->where('identrada', $id);
+    return $this->db->update('entrada', $data);
+  }
+
   public function total(){
     return $this->db->count_all('entrada');
   }
