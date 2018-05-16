@@ -41,15 +41,18 @@ class Usuario_model extends CI_Model{
   public function get_all(){
     $this->db->select('*');
     $this->db->from('usuario');
+    $this->db->order_by('id_user', 'DESC');
     $query = $this->db->get();
     if($query->num_rows() > 0){
       $usuarios = $query->result();
       $this->db->reset_query();
+      /**
       for ($i=0; $i < sizeof($usuarios); $i++) {
         unset($usuarios[$i]->pssword);
-        $this->db->select('*');
-        $this->db->from('sucursal');
-        $this->db->where('idsucursal', $usuarios[$i]->sucursal);
+        $this->db->select('permisos.sucursal, sucursal.*');
+        $this->db->from('permisos');
+        $this->db->join('sucursal', 'sucursal.idsucursal = permisos.sucursal');
+        $this->db->where('usuario', $usuarios[$i]->id_user);
         $query = $this->db->get();
         if($query->num_rows() > 0){
           $usuarios[$i]->sucursal = $query->row();
@@ -57,6 +60,7 @@ class Usuario_model extends CI_Model{
           $usuarios[$i]->sucursal = null;
         }
       }
+      **/
       return $usuarios;
     }else{
       return null;

@@ -313,7 +313,7 @@ class Usuario extends REST_Controller{
               'pssword' => password_hash($this->put('password'), PASSWORD_BCRYPT, array('cost' => 12)),
               'direccion' => $this->put('direccion'),
               'foto' => $file_data['file_name'],
-              'sucursal' => $this->put('sucursal')
+              //'sucursal' => $this->put('sucursal')
             );
             if($this->Usuario->update($user_id, $data)){
               $response = array(
