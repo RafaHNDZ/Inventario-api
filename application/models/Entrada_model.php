@@ -62,29 +62,87 @@ class Entrada_model extends CI_Model{
       $entradas = $query->result();
       for ($i=0; $i < sizeof($entradas); $i++) {
         //Traer el proveedor de la entrada
-        $entradas[$i]->proveedor = $this->Proveedor->detalils($entradas[$i]->proveedor);
-        //Traer el usuario(empleado) que registro la entrada
-        $entradas[$i]->usuario = $this->Usuario->details($entradas[$i]->usuario);
-        //Traer la sucursal que registro la entrada
-        $entradas[$i]->sucursal = $this->Sucursal->details($entradas[$i]->sucursal);
-        //Traer el detalle(lista de productos) de la entrada
-        /**
+        //$entradas[$i]->proveedor = $this->Proveedor->detalils($entradas[$i]->proveedor);
         $this->db->reset_query();
-        $this->db->where('entrada', $entradas[$i]->identrada);
-        $query = $this->db->get('detalle_entrada');
+        $this->db->select('idproveedor, nombre');
+        $this->db->from('proveedor');
+        $this->db->where('idproveedor', $entradas[$i]->proveedor);
+        $query = $this->db->get();
         if($query->num_rows() > 0){
-          $detalle = $query->result();
-          for ($x=0; $x <sizeof($detalle); $x++) {
-            $detalle[$x]->producto = $this->Producto->details($detalle[$x]->producto);
-          }
+          $entradas[$i]->proveedor = $query->row();
         }else{
-          $entradas[$i]->detalle = null;
+          $entradas[$i]->proveedor = null;
         }
+        //Traer el usuario(empleado) que registro la entrada
+        //$entradas[$i]->usuario = $this->Usuario->details($entradas[$i]->usuario);
+        $this->db->reset_query();
+        $this->db->select('id_user, nombre, apellidos');
+        $this->db->from('usuario');
+        $this->db->where('id_user', $entradas[$i]->usuario);
+        $query = $this->db->get();
+        if($query->num_rows() > 0){
+          $entradas[$i]->usuario = $query->row();
+        }else{
+          $entradas[$i]->usuario = null;
+        }
+        //Traer la sucursal que registro la entrada
+        //$entradas[$i]->sucursal = $this->Sucursal->details($entradas[$i]->sucursal);
+        $this->db->reset_query();
+        $this->db->select('idsucursal, direccion');
+        $this->db->from('sucursal');
+        $this->db->where('idsucursal', $entradas[$i]->sucursal);
+        $query = $this->db->get();
+        if($query->num_rows() > 0){
+          $entradas[$i]->sucursal = $query->row();
+        }else{
+          $entradas[$i]->sucursal = null;
+        }
+        //Traer el detalle(lista de productos) de la entrada
+          $this->db->reset_query();
+          $this->db->select('stock_ingreso');
+          $this->db->from('detalle_entrada');
+          $this->db->where('entrada', $entradas[$i]->identrada);
+          $query = $this->db->get();
+          $total = 0;
+          if($query->num_rows() > 0){
+            $data = $query->result();
+            for ($z=0; $z < sizeof($data); $z++) {
+              $total += $data[$z]->stock_ingreso;
+            }
+            $entradas[$i]->total_poductos = $total;
+          }
+          $entradas[$i]->total_entrada = self::total_entrada($entradas[$i]->identrada);
+        /**
         **/
       }
       return $entradas;
     }else{
       return null;
+    }
+  }
+
+  public function total_entrada($entrada){
+    $this->db->select('precio_compra, stock_ingreso');
+    $this->db->from('detalle_entrada');
+    $this->db->where('entrada', $entrada);
+    $query = $this->db->get();
+    $data = $query->result();
+    $sub = 0.00;
+    for ($i=0; $i < sizeof($data); $i++) {
+      $sub += floatval($data[$i]->precio_compra) * floatval($data[$i]->stock_ingreso);
+    }
+    return round($sub, 2);
+  }
+
+  public function count_total($params = null){
+    if($params){
+      $this->db->select('identrada');
+      $this->db->from('entrada');
+      $this->db->where($params);
+      $query = $this->db->get();
+      return $query->num_rows();
+    }else{
+      return $this->db->count_all('entrada');
     }
   }
 

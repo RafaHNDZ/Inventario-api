@@ -62,7 +62,7 @@ $route['api/usuario/(:num)']['put'] = 'api/Usuario/update/$1';
 $route['api/usuario/(:num)']['delete'] = 'api/Usuario/remove/$1';
 
 //$route['api/entradas/(:num)/(:num)']['get'] = 'api/Entrada/$1/$2';
-$$route['api/entradas']['get'] = 'api/Entrada';
+$route['api/entradas']['get'] = 'api/Entrada';
 $route['api/entradas']['get'] = 'api/Entrada';
 $route['api/entradas/(:num)']['get'] = 'api/Entrada/detalle/$1';
 $route['api/entradas/(:num)']['put'] = 'api/Entrada/update/$1';

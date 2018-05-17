@@ -17,7 +17,8 @@ class Entrada extends REST_Controller{
     if(!$authorization){
       $response = array(
         'code' => 401,
-        'message' => 'Se requiere Token'
+        'message' => 'Acceso denegado',
+        'error' => 'Se requiere Token'
       );
     }else{
       //Verificar Token
@@ -25,7 +26,8 @@ class Entrada extends REST_Controller{
       if(!$this->auth->check($authorization)){
         $response = array(
           'code' => 401,
-          'message' => 'Token no valido'
+          'message' => 'Acceso denegado',
+          'error' => 'Token no valido'
         );
       }else{
         //Decodificar Token
@@ -42,7 +44,8 @@ class Entrada extends REST_Controller{
           if(!isset($permisos) OR !$permisos->manage_entradas){
             $response = array(
               'code' => 401,
-              'message' => 'Acceso denegado'
+              'message' => 'Acceso denegado',
+              'error' => 'No se tienen permisos de acceso/admin'
             );
           }else{
             $sucursal = $this->get('sucursal');
@@ -57,8 +60,8 @@ class Entrada extends REST_Controller{
             }else{
               $response = array(
                 'code' => 200,
-                'total' => $this->Entrada->total(),
-                'entradas' => $entradas
+                'total' => $this->Entrada->count_total(array('sucursal'=>$sucursal)),
+                'data' => $entradas
               );
             }
           }
