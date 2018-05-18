@@ -10,6 +10,7 @@ class Entrada_model extends CI_Model{
     $this->load->model('Sucursal_model', 'Sucursal');
     $this->load->model('Producto_model', 'Producto');
   }
+
 /**
  * Registra un arreglo de entradas al sistema.
  * @param  Array $entradas arreglo de entradas con su arreglo de detalles
@@ -42,6 +43,7 @@ class Entrada_model extends CI_Model{
       return true;
     }
   }
+
   /**
    * Regresa una serie de registros de la tabla entrada
    * @param  Int $per_page Número de registros solicitados
@@ -153,8 +155,10 @@ class Entrada_model extends CI_Model{
       $entrada = $query->row();
       $this->db->reset_query();
       //Traer info de proveedor
+      $this->db->select('idproveedor, nombre, tipo');
+      $this->db->from('proveedor');
       $this->db->where('idproveedor', $entrada->proveedor);
-      $query = $this->db->get('proveedor');
+      $query = $this->db->get();
       if($query->num_rows() > 0){
         $entrada->proveedor = $query->row();
       }else{
@@ -162,8 +166,10 @@ class Entrada_model extends CI_Model{
       }
       $this->db->reset_query();
       //Traer info del usuario
+      $this->db->select('id_user, nombre, apellidos');
+      $this->db->from('usuario');
       $this->db->where('id_user', $entrada->usuario);
-      $query = $this->db->get('usuario');
+      $query = $this->db->get();
       if($query->num_rows() > 0){
         $entrada->usuario = $query->row();
       }else{
@@ -188,6 +194,12 @@ class Entrada_model extends CI_Model{
     }
   }
 
+ /**
+  * Actualiza un registro de la tabla entrada
+  * @param  Int   $id       Id del registro a actualizar
+  * @param  Array $data
+  * @return Bolean
+  */
   public function update($id, $data){
     $this->db->where('identrada', $id);
     return $this->db->update('entrada', $data);

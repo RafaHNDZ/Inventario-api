@@ -68,3 +68,4 @@ $route['api/entradas/(:num)']['get'] = 'api/Entrada/detalle/$1';
 $route['api/entradas/(:num)']['put'] = 'api/Entrada/update/$1';
 
 $route['api/proveedor']['get'] = 'api/Proveedor/pagination';
+$route['api/proveedor']['post'] = 'api/Proveedor/create';
