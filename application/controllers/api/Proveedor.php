@@ -150,6 +150,64 @@ class Proveedor extends REST_Controller{
     $this->response($response);
   }
 
-
+  public function update_put($id){
+    //Obtener Headers
+    $headers = $this->input->request_headers();
+    $authorization = $headers['Authorization'];
+    //Comprobar si se tiene Token
+    if(!$authorization){
+      $response = array(
+        'code' => 400,
+        'message' => 'Acceso denegado',
+        'error' => 'Se requiere Token'
+      );
+    }else{
+      //Verificar Token
+      $this->load->library('Auth');
+      if(!$this->auth->check($authorization)){
+        $response = array(
+          'code' => 403,
+          'message' => 'Acceso denegado',
+          'error' => 'Token no valido'
+        );
+      }else{
+        //Decodificar Token
+        $usuario = $this->auth->decode($authorization);
+        if(!$usuario){
+          $response = array(
+            'code' => 500,
+            'message' => 'No se puede acceder al Token'
+          );
+        }else{
+          //Verificar permisos
+          $permisos = $this->Permiso->get_permisos($usuario->data->id_user);
+          if(!isset($permisos) OR $permisos->manage_proveedores != TRUE){
+            //No tiene permisos en general
+            $response = array(
+              'code' => 403,
+              'message' => 'Acceso denegado',
+              'error' => 'Sin permisos para administrar usuarios'
+            );
+          }else{
+            $data = $this->put();
+            if($this->Proveedor->update($id, $data)){
+              $response = array(
+                'code' => 200,
+                'data' => $this->put(),
+                'id' => $id
+              );
+            }else{
+              $response = array(
+                'code' => 500,
+                'message' => 'Error el la DB',
+                'error' => $this->db->error()
+              );
+            }
+          }
+        }
+      }
+    }
+    $this->response($response);
+  }
 
 }

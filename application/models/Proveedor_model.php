@@ -35,6 +35,11 @@ class Proveedor_model extends CI_Model{
     }
   }
 
+  public function update($id, $data){
+    $this->db->where('idproveedor', $id);
+    return $this->db->replace('proveedor', $data);
+  }
+
   public function paginate($page, $per_page){
     $offset = $per_page * ($page - 1);
     $this->db->select('*');
